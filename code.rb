@@ -5,38 +5,63 @@
 
 =end
 
-$put_at = { :player => { :x => 0, :y => 0 } }
+require 'colorize'
+
+$put_at = { :player => { :x => [0, 1, 2, 3], :y => [16, 17, 18, 19] } }
 
 $print_buffer = []
 $print_cache = []
 
 class Game
 
-    attr_accessor :width, :height, :line_count, :items_in_buffer
+    attr_accessor :width, :height, :x, :y
 
     def initialize(width, height)
         @width = width
         @height = height
-        @line_count = 0
-        @items_in_buffer = 0
+        @x = 0
+        @y = 0
+    end
+
+    def run()
+        while(true)
+            draw_screen()
+            sleep(0.1)
+            system("clear") || system("cls")
+            update_player_position()
+        end
+    end
+
+    def update_player_position()
+        if($put_at[:player][:x].any?(@width - 1))
+            $put_at = { :player => { :x => [0, 1, 2, 3], :y => [16, 17, 18, 19] } }
+        else
+            $put_at[:player][:x] = $put_at[:player][:x].map { |pos|
+                pos += 1
+            }
+        end
     end
 
     def draw_screen()
         # y
-        while(@line_count < @height)
+        while(@y < @height)
             # loop for printing horizontal line x
-            node_count = 0
-            while(@items_in_buffer < @width)
-                $print_buffer.push("0")
-                node_count += 1
-                @items_in_buffer += 1
+            while(@x < @width)
+                    if($put_at[:player][:x].any?(@x) && $put_at[:player][:y].any?(@y))
+                        $print_buffer.push("1".colorize(:white))
+                    else
+                        $print_buffer.push("0".colorize(:blue))
+                    end
+                @x += 1
             end
 
             self.print()
 
-            @items_in_buffer = 0
-            @line_count += 1
+            @x = 0
+            @y += 1
         end
+
+        @y = 0
     end
 
     def print()
@@ -52,4 +77,4 @@ class Game
 end
 
 game = Game.new(100, 20)
-game.draw_screen()
+game.run()
